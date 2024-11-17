@@ -1,0 +1,15 @@
+pandas
+sqlalchemy
+psycopg2-binary
+pyserial
+pytest
+streamlit
+pandas
+plotly
+joblib
+scikit-learn
+sqlalchemy
+psycopg2
+pyserial
+pytest
+streamlit-autorefresh
