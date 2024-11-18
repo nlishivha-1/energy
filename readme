@@ -1,0 +1,49 @@
+# Energy Predictor Dashboard
+
+## Overview
+
+This project is an operational dashboard for predicting energy usage in different stations. The dashboard provides an overview of the energy usage in real-time and historical data. It also includes features such as data visualization, alert system, and data download.
+
+## Features
+
+- Real-time energy usage data
+- Historical data visualization
+- User-friendly interface
+
+Requirements
+
+- Python 3.8+
+- Streamlit 0.85+
+- Pandas 1.2+
+- NumPy 1.20+
+- Matplotlib 3.4+
+- Seaborn 0.11+
+- Installation
+
+Clone the repository: git clone https://github.com/nlishivha-1/energy
+
+
+Install the required libraries: pip install -r requirements.txt
+Run the dashboard: streamlit run app.py
+Usage
+
+Open the dashboard in your web browser: http://localhost:8501
+Select a station from the dropdown menu
+View real-time energy usage data
+View historical data visualization
+Download data as a CSV file
+Contributing
+
+Contributions are welcome! If you have any ideas or suggestions for improving the dashboard, please open an issue or submit a pull request.
+
+License
+
+This project is licensed under the MIT License.
+
+Acknowledgments
+
+This project was built using Streamlit, Pandas, NumPy, Matplotlib, and Seaborn. Special thanks to the developers of these libraries for making data science and visualization so accessible.
+
+Contact
+
+If you have any questions or need help with the dashboard, please contact [Your Name] at [ndimuhululishivh@gmail.com].
