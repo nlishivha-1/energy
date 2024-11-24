@@ -15,4 +15,4 @@ class DatabaseConfig:
         )
 
 
-MODEL = "model/random_forest_energy_model_20241113_203659.pkl"
+MODEL = "model/random_forest_energy_model_20241118_213647.pkl"

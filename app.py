@@ -6,9 +6,31 @@ from machine_learning.predict import forecast_energy, predict_energy
 from streamlit_autorefresh import st_autorefresh
 from data_aquisition.db_operations import load_historical_data, load_real_time_data
 from config import MODEL
+import pandas as pd
 
 # Set page configuration
 st.set_page_config(page_title="Operational Energy Dashboard", layout="wide")
+
+
+# Function to remove duplicate timestamps and average the data
+def remove_duplicate_timestamps(data: pd.DataFrame) -> pd.DataFrame:
+    """Remove duplicate timestamps by averaging the data."""
+    data = (
+        data.groupby("Timestamp")
+        .agg(
+            {
+                "Station": "first",
+                "Voltage": "mean",
+                "Current": "mean",
+                "Power": "mean",
+                "Energy": "mean",
+                "Frequency": "mean",
+                "PF": "mean",
+            }
+        )
+        .reset_index()
+    )
+    return data
 
 
 # Load the machine learning model
@@ -62,6 +84,7 @@ def update_dashboard(station: str, mode: str, start_date: date, end_date: date) 
             (historical_data["Timestamp"].dt.date >= start_date)
             & (historical_data["Timestamp"].dt.date <= end_date)
         ]
+        data = remove_duplicate_timestamps(data)
         if station != "Overall":
             data = data[data["Station"] == station]
         # Generate predictions for the historical data
@@ -69,13 +92,15 @@ def update_dashboard(station: str, mode: str, start_date: date, end_date: date) 
     else:
         data = load_real_time_data()
         if station != "Overall":
+
             data = data[data["Process_ID"] == station].tail(120)
 
         # Add predicted energy for real-time data
-        data["Predicted_Energy"] = predict_energy(model, data)
+        data["Predicted_Energy"] = predict_energy(model, data) + 0.8665
 
     # Display current energy metrics
-    current_data = data.iloc[-1]
+    current_data = data.loc[data["Timestamp"] == data["Timestamp"].max()].iloc[0]
+
     current_energy = current_data["Energy"]
     if mode == "Historical":
         last_prediction = historical_predictions["Predicted_Energy"].iloc[-1]
@@ -235,7 +260,7 @@ def display_about() -> None:
 
 def main() -> None:
     """Main function to run the Streamlit app."""
-    logo_path = "icons/logo.png"
+    logo_path = "icons/logo.jpg"
     st.sidebar.image(logo_path, use_container_width=True)
     st.title("Operational Energy Prediction Dashboard")
 
@@ -265,7 +290,7 @@ def main() -> None:
 
         # Auto-refresh mechanism for real-time data
         if data_mode == "Real-time":
-            st_autorefresh(interval=10000, key="data_refresh")
+            st_autorefresh(interval=60 * 10000, key="data_refresh")
 
         # Update and display the dashboard
         update_dashboard(selected_station, data_mode, start_date, end_date)
