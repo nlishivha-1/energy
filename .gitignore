@@ -26,7 +26,8 @@ __pycache__
 data/
 dq/
 env.py
-data/
+data
+model/
 
 # Other files
 *.egg-info

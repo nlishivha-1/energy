@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 
 # Load data
-df = pd.read_csv("/Users/nlishivha_sandtech/Desktop/energy/data/high.csv")
+df = pd.read_csv("/Users/nlishivha_sandtech/Desktop/energy/data/2_all_data.csv")
 
 # Convert Timestamp to datetime
 df["Timestamp"] = pd.to_datetime(df["Timestamp"])

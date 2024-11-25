@@ -37,7 +37,7 @@ def predict_energy(model, df):
     """Predict energy for all data points in the dataframe using the model."""
     X = df[["Voltage", "Current", "Power", "Frequency", "PF"]]
     predictions = model.predict(X)
-    return pd.DataFrame({"Predicted_Energy": predictions})
+    return pd.DataFrame({"Timestamp": df["Timestamp"], "Predicted_Energy": predictions})
 
 
 # if __name__ == "__main__":

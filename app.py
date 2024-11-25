@@ -42,9 +42,19 @@ def load_model() -> joblib:
 
 model = load_model()
 
+
 # Load historical and real-time data
-historical_data = load_historical_data()
-real_time_data = load_real_time_data()
+@st.cache_data
+def load_historical_df():
+    return load_historical_data()
+
+
+def load_real_time_df():
+    return load_real_time_data()
+
+
+historical_data = load_historical_df()
+real_time_data = load_real_time_df()
 station_list = historical_data["Station"].unique().tolist()
 
 
@@ -88,7 +98,7 @@ def update_dashboard(station: str, mode: str, start_date: date, end_date: date) 
         if station != "Overall":
             data = data[data["Station"] == station]
         # Generate predictions for the historical data
-        historical_predictions = forecast_energy(model, data)
+        historical_predictions = predict_energy(model, data)
     else:
         data = load_real_time_data()
         if station != "Overall":
@@ -96,7 +106,7 @@ def update_dashboard(station: str, mode: str, start_date: date, end_date: date) 
             data = data[data["Process_ID"] == station].tail(120)
 
         # Add predicted energy for real-time data
-        data["Predicted_Energy"] = predict_energy(model, data) + 0.8665
+        data["Predicted_Energy"] = predict_energy(model, data)["Predicted_Energy"]
 
     # Display current energy metrics
     current_data = data.loc[data["Timestamp"] == data["Timestamp"].max()].iloc[0]
@@ -132,15 +142,28 @@ def update_dashboard(station: str, mode: str, start_date: date, end_date: date) 
         )
     )
     if mode == "Real-time":
+        # energy_figure.add_trace(
+        #     go.Scatter(
+        #         x=data["Timestamp"],
+        #         y=data["Predicted_Energy"],
+        #         mode="lines",
+        #         name="forecasted Energy",
+        #         line=dict(color="yellow", dash="dash"),
+        #     )
+        # )
+
+        predictions = predict_energy(model, data)
         energy_figure.add_trace(
             go.Scatter(
-                x=data["Timestamp"],
-                y=data["Predicted_Energy"],
-                mode="lines",
+                x=predictions["Timestamp"],
+                y=predictions["Predicted_Energy"],
+                mode="markers+lines",
                 name="Predicted Energy",
-                line=dict(color="red", dash="dash"),
+                line=dict(color="red", dash="dashdot"),
+                marker=dict(size=8),
             )
         )
+
     elif mode == "Historical":
         energy_figure.add_trace(
             go.Scatter(
@@ -197,9 +220,11 @@ def update_dashboard(station: str, mode: str, start_date: date, end_date: date) 
     st.divider()
 
     if mode == "Real-time":
+        figure = go.Figure()
+
         # Plot future predictions
         future_df = forecast_energy(model, data)
-        energy_figure.add_trace(
+        figure.add_trace(
             go.Scatter(
                 x=future_df["Timestamp"],
                 y=future_df["Predicted_Energy"],
@@ -210,13 +235,13 @@ def update_dashboard(station: str, mode: str, start_date: date, end_date: date) 
             )
         )
 
-        energy_figure.update_layout(
+        figure.update_layout(
             xaxis_title="Time",
             yaxis_title="Energy (kWh)",
             title="Predicted Energy Usage (Next Hour)",
             legend=dict(x=0, y=1),
         )
-        st.plotly_chart(energy_figure, use_container_width=True)
+        st.plotly_chart(figure, use_container_width=True)
 
 
 def display_about() -> None:
@@ -269,6 +294,8 @@ def main() -> None:
     option = st.sidebar.selectbox("Select Option", ["Dashboard", "About", "Settings"])
 
     if option == "Dashboard":
+        st.write("App last refreshed at:", pd.Timestamp.now())
+
         selected_station = st.sidebar.selectbox(
             "Select Station", ["Overall"] + station_list
         )
@@ -290,7 +317,8 @@ def main() -> None:
 
         # Auto-refresh mechanism for real-time data
         if data_mode == "Real-time":
-            st_autorefresh(interval=60 * 10000, key="data_refresh")
+
+            st_autorefresh(interval=10000, key="data_refresh")
 
         # Update and display the dashboard
         update_dashboard(selected_station, data_mode, start_date, end_date)
